@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>你身上住着哪位古人</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #f5f1e8;
+    color: #2b2620;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", serif;
+    line-height: 1.9;
+    min-height: 100vh;
+    padding: 0 0 56px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 22px; }
+
+  #cover { padding-top: 15vh; text-align: center; }
+  #cover h1 { font-size: 29px; letter-spacing: 5px; font-weight: 600; margin: 0 0 16px; }
+  #cover .line { width: 38px; height: 1px; background: #c9bda9; margin: 26px auto 26px; }
+  #cover p { font-size: 15px; color: #6a6156; margin: 7px 0; }
+  .hintline { margin-top: 24px; font-size: 13px; color: #9c9285; }
+
+  .btn {
+    display: inline-block; margin-top: 38px;
+    background: #2b2620; color: #f5f1e8;
+    border: none; border-radius: 2px;
+    padding: 15px 44px; font-size: 16px; letter-spacing: 4px;
+    font-family: inherit; cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn:active { opacity: .72; }
+  .btn.ghost {
+    background: transparent; color: #6a6156;
+    border: 1px solid #c9bda9;
+    padding: 12px 26px; font-size: 14px; letter-spacing: 1px;
+    margin-top: 0;
+  }
+
+  #quiz { display: none; padding-top: 42px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: #9c9285; letter-spacing: 1.5px; margin-bottom: 14px;
+  }
+  .bar { height: 2px; background: #e4ddd0; position: relative; margin-bottom: 40px; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #8a6a4a; transition: width .35s ease; }
+
+  .q {
+    font-size: 20px; line-height: 1.85; font-weight: 500;
+    margin: 0 0 32px; min-height: 3.7em;
+    animation: fade .3s ease;
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .opts { display: flex; flex-direction: column; gap: 11px; }
+  .opt {
+    text-align: left; width: 100%;
+    background: #fffdf8; border: 1px solid #e4ddd0; border-radius: 3px;
+    padding: 15px 17px; font-size: 15.5px; line-height: 1.8;
+    color: #2b2620; font-family: inherit; cursor: pointer;
+    transition: background .16s, border-color .16s, transform .1s;
+  }
+  .opt:active { transform: scale(.99); }
+  .opt.sel { background: #2b2620; color: #f5f1e8; border-color: #2b2620; }
+
+  #result { display: none; padding-top: 44px; }
+  .r-eyebrow { font-size: 12px; letter-spacing: 4px; color: #9c9285; margin-bottom: 8px; }
+  .r-name { font-size: 34px; letter-spacing: 8px; font-weight: 600; margin: 0 0 4px; }
+  .r-person { font-size: 14px; color: #8c8378; letter-spacing: 1px; margin-bottom: 26px; }
+
+  .r-card {
+    background: #fffdf8; border: 1px solid #e4ddd0; border-radius: 3px;
+    padding: 20px 19px; margin-bottom: 16px;
+  }
+  .r-card h3 { font-size: 12px; letter-spacing: 3px; color: #9c9285; margin: 0 0 12px; font-weight: 500; }
+  .r-card p { margin: 0; font-size: 15.5px; line-height: 2.05; }
+  .r-card p + p { margin-top: 10px; }
+
+  .dim { margin-bottom: 15px; }
+  .dim:last-child { margin-bottom: 0; }
+  .dim .lab { display: flex; justify-content: space-between; font-size: 12px; color: #9c9285; margin-bottom: 6px; }
+  .dim .track { height: 1px; background: #e4ddd0; position: relative; }
+  .dim .track i { position: absolute; top: -2px; width: 5px; height: 5px; border-radius: 50%; background: #8a6a4a; }
+
+  .quote { border-left: 2px solid #c9bda9; padding: 2px 0 2px 15px; color: #6a6156; font-size: 15px; margin: 22px 0 0; line-height: 1.95; }
+
+  .actions { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* 保存图片浮层 */
+  #shade {
+    display: none; position: fixed; inset: 0; background: rgba(30,26,20,.82);
+    z-index: 99; overflow: auto; padding: 30px 20px 50px;
+  }
+  #shade.on { display: block; }
+  #shade .tip {
+    color: #f5f1e8; text-align: center; font-size: 13px;
+    letter-spacing: 1px; margin-bottom: 16px;
+  }
+  #shade img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 2px; }
+  #shade .close {
+    display: block; margin: 22px auto 0;
+    background: none; border: 1px solid rgba(245,241,232,.5);
+    color: #f5f1e8; padding: 10px 30px; font-size: 14px;
+    font-family: inherit; border-radius: 2px; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <section id="cover">
+    <h1>你身上住着哪位古人</h1>
+    <div class="line"></div>
+    <p>别当历史题做。</p>
+    <p>就问一句：出事那天，你身上谁先动。</p>
+    <div class="hintline">三十二题 · 没有标准答案 · 别想太久</div>
+    <button class="btn" id="start">开 始</button>
+  </section>
+
+  <section id="quiz">
+    <div class="topbar">
+      <span id="prog">01 / 32</span>
+      <span>选最像的那个就行</span>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="q" id="qText"></div>
+    <div class="opts" id="opts"></div>
+  </section>
+
+  <section id="result">
+    <div class="r-eyebrow">你身上住着</div>
+    <h1 class="r-name" id="rName"></h1>
+    <div class="r-person" id="rPerson"></div>
+
+    <div class="r-card">
+      <h3>大概是这么个人</h3>
+      <div id="rWhy"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>四个方向</h3>
+      <div id="rDims"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>另外</h3>
+      <div id="rExtra"></div>
+    </div>
+
+    <p class="quote" id="rQuote"></p>
+
+    <div class="actions">
+      <button class="btn ghost" id="saveBtn">存成图片</button>
+      <button class="btn ghost" id="again">再测一次</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="shade">
+  <div class="tip">长按图片保存 · 或截图</div>
+  <img id="cardImg" alt="">
+  <button class="close" id="closeShade">关掉</button>
+</div>
+
+<script>
+const DIMS = ["act", "direct", "order", "alone"];
+
+const QUESTIONS = [
+  { q: "班群里有人把你的话理解错了，语气还带着点指责。你",
+    o: [["马上回，一句一句讲清楚", {act:2,direct:2}],
+        ["先放着，等自己不那么上头再回", {act:-1,direct:-1,order:1}],
+        ["私聊他，群里不撕", {direct:-2,alone:-1}]] },
+
+  { q: "排队时前面有人插队，一队人都没吭声。你",
+    o: [["直接开口：麻烦按顺序", {act:2,direct:2,order:2}],
+        ["算了，就一分钟", {act:-2,order:-1}],
+        ["不说，但会一直盯着那人", {act:-1,direct:-2}]] },
+
+  { q: "一个人吃饭，你",
+    o: [["挺好，终于没人跟我说话", {alone:2,act:-1}],
+        ["有点空，想找个人一起", {alone:-2,act:1}],
+        ["忙的时候挺好，闲了就不行", {alone:0}]] },
+
+  { q: "要做一件没做过的事，你第一步",
+    o: [["先上手，边干边改", {act:2,direct:1}],
+        ["先看别人怎么弄，把路数摸清", {act:-1,direct:-1,order:1}],
+        ["先找个做过的人问", {alone:-2,act:-1}]] },
+
+  { q: "有人托你办事，可你今天其实很累",
+    o: [["答应，然后硬扛", {act:2,alone:1,order:1}],
+        ["直说不行，今天没力气", {direct:2,act:1,alone:1}],
+        ["答应，但往后拖", {direct:-1,order:-1}]] },
+
+  { q: "规矩和人情撞上了，你更",
+    o: [["规矩就是规矩", {order:2,direct:1}],
+        ["看是谁，人比规矩重", {order:-2,alone:-1}],
+        ["绕一下，找条两边都过得去的路", {direct:-2,order:0}]] },
+
+  { q: "有人当众说你这事做得不行。你",
+    o: [["当场问：哪儿不行", {act:2,direct:2}],
+        ["不吭声，回去自己改", {act:-1,alone:2}],
+        ["笑一下，以后不跟他搭伙", {direct:-1,alone:2,order:-1}]] },
+
+  { q: "你的房间",
+    o: [["东西都有固定位置", {order:2}],
+        ["乱，但我知道东西在哪", {order:-2,act:1}],
+        ["乱到某一天，一次性收干净", {order:0,act:-1}]] },
+
+  { q: "出去玩，你更想",
+    o: [["路线排好，按点走", {order:2,direct:1}],
+        ["到了再说，随便逛", {order:-2,direct:-1}],
+        ["跟着别人，我不操心", {alone:-2,act:-1}]] },
+
+  { q: "你说话更常是",
+    o: [["绕一圈，最后才到点上", {direct:-2}],
+        ["先给结论，再补理由", {direct:2,act:1}],
+        ["边说边想，说到哪算哪", {direct:-1,act:-1}]] },
+
+  { q: "有人被一群人围着说，明显说不过。你",
+    o: [["插一句，帮他挡一下", {act:2,direct:2,order:-1}],
+        ["不吭声，散了以后去找他", {act:-1,alone:-1,direct:-1}],
+        ["不关我事", {act:-2,alone:2}]] },
+
+  { q: "说到稳定，你",
+    o: [["有个稳的底，才敢干别的", {order:2,act:-1}],
+        ["太稳了我待不住", {order:-2,direct:1}],
+        ["稳不稳都行，看跟谁过", {alone:-1}]] },
+
+  { q: "一个明显不如你懂的人，正在指挥你",
+    o: [["照做，出事不是我的", {order:2,act:-1}],
+        ["当面反对，把话摆出来", {direct:2,act:2,order:-1}],
+        ["当面答应，回头按自己的来", {direct:-2,order:-2}]] },
+
+  { q: "重复的、看不到头的活，你能干多久",
+    o: [["能干，只要有人认", {order:2,act:1}],
+        ["干不了，会疯", {direct:1,order:-2}],
+        ["能干，但得自己找点意思", {act:-1,alone:1}]] },
+
+  { q: "你希望被看见吗",
+    o: [["希望，越多人看见越好", {alone:-2,act:1}],
+        ["只想被在乎的那几个人看见", {alone:1,direct:-1}],
+        ["最好别看见我", {alone:2,act:-2}]] },
+
+  { q: "吵起来的时候，你更常",
+    o: [["一次说到位，讲透", {direct:2,act:2}],
+        ["不说话，冷着", {act:-2,alone:2}],
+        ["走开，等对方冷静", {act:-1,direct:-2}]] },
+
+  { q: "答应过的事，后来发现很麻烦",
+    o: [["硬着头皮做完", {order:2,act:2}],
+        ["老实说做不了，赔个不是", {direct:2,order:-1}],
+        ["拖着，等对方忘", {order:-2,act:-2}]] },
+
+  { q: "朋友跟你说了件事，后来你发现它牵扯到别人的安危",
+    o: [["说出去，命比承诺重", {order:-1,direct:2,act:1}],
+        ["不说，守住", {order:2,alone:1}],
+        ["先劝他自己去说", {direct:-1,alone:-1}]] },
+
+  { q: "一个挺好的机会，你事后才发现自己错过了",
+    o: [["算了，还有下一个", {act:1,direct:1}],
+        ["会翻来覆去想很久，想自己哪步错了", {act:-2,order:1}],
+        ["难受，但不说", {act:-1,alone:2}]] },
+
+  { q: "交朋友你更看",
+    o: [["能不能一起做事", {act:2,order:1}],
+        ["能不能说心里话", {alone:-1,direct:-1}],
+        ["不说话也不尴尬", {alone:1}]] },
+
+  { q: "「公平」对你更接近",
+    o: [["付出多少，回报多少", {order:2,direct:1}],
+        ["谁更需要，就多给谁", {order:-2,alone:-1}],
+        ["别让人吃亏就行", {direct:-1}]] },
+
+  { q: "你的时间",
+    o: [["排成一格一格的", {order:2}],
+        ["一堆没做完的事", {act:-1,order:-1}],
+        ["别人表里的空格", {alone:-2,act:-1}]] },
+
+  { q: "被人误解，你会解释吗",
+    o: [["会，一定要说清", {act:2,direct:2}],
+        ["不会，懂的人自然懂", {act:-2,alone:2}],
+        ["看是谁误解我", {alone:-1}]] },
+
+  { q: "难受的时候，你通常",
+    o: [["找人说话", {alone:-2,act:1}],
+        ["一个人待着，谁也别来", {alone:2,act:-1}],
+        ["找点别的事做，岔过去", {act:1,direct:-1}]] },
+
+  { q: "有人明确需要你。你的感觉",
+    o: [["有劲，被需要挺好", {act:2,alone:-1}],
+        ["有压力，怕做不好", {act:-1,order:1}],
+        ["想跑", {act:-2,alone:2}]] },
+
+  { q: "你发现一个规则漏洞，对你有利",
+    o: [["用，不用白不用", {order:-2,direct:1,act:1}],
+        ["不用，破一次就有第二次", {order:2}],
+        ["不用，但会告诉别人", {order:1,alone:-2}]] },
+
+  { q: "「慢」这件事，你",
+    o: [["受不了，会焦", {act:2,direct:1}],
+        ["挺享受，慢下来才想得清", {act:-2,direct:-1}],
+        ["看事，重要的事愿意慢", {order:1}]] },
+
+  { q: "要在一个不合适的地方待很久，你",
+    o: [["忍，忍到能走", {order:2,act:1}],
+        ["想办法把这地方改了", {act:2,direct:2,order:-1}],
+        ["悄悄准备走", {act:-1,direct:-2,alone:1}]] },
+
+  { q: "你的独处，更像",
+    o: [["充电", {alone:1,act:-1}],
+        ["躲", {alone:2,act:-2,direct:-1}],
+        ["干活", {alone:1,act:2}]] },
+
+  { q: "有人要做一件很傻但很勇敢的事。你",
+    o: [["跟着干", {act:2,direct:2,order:-2}],
+        ["拦他，把后果讲给他听", {order:2,direct:1,act:1}],
+        ["不拦也不跟，但会看着他", {act:-2,alone:2}]] },
+
+  { q: "别人最常说你的一句是",
+    o: [["你太较真了", {order:2,direct:1}],
+        ["你太不把事当事了", {order:-2,act:-1}],
+        ["你怎么什么都自己扛", {alone:2,act:1}]] },
+
+  { q: "最后一题。你更怕",
+    o: [["怕自己变成不想成为的那种人", {order:1,direct:1,alone:1}],
+        ["怕一辈子没做过想做的事", {act:2,order:-1}],
+        ["怕最后是一个人", {alone:-2}]] }
+];
+
+const TYPES = [
+  { n: "孤臣", person: "影子里站着的那个人：屈原",
+    t: { act: 38, direct: 72, order: 84, alone: 74 },
+    why: [
+      "你这人有点轴。",
+      "明知道说了也没用，还是要说。别人早不提了，你还记着。",
+      "所以你常常不合时宜。事都翻篇了，你还站在原地。"
+    ],
+    extra: "真要走的时候，你比谁都干净。",
+    quote: "「明知道没用。还是说了。」" },
+
+  { n: "谋士", person: "影子里站着的那个人：张良",
+    t: { act: 28, direct: 15, order: 78, alone: 35 },
+    why: [
+      "你话少。但别人说的，你都记着。",
+      "当面争不过，你就不争了。回头换个法子来。",
+      "当场输赢你不太在乎。你在乎的是最后还剩谁。"
+    ],
+    extra: "真要开口的时候，你能把一件难事讲得人点头。",
+    quote: "「不争这一回。争后面。」" },
+
+  { n: "隐士", person: "影子里站着的那个人：陶渊明",
+    t: { act: 12, direct: 60, order: 25, alone: 95 },
+    why: [
+      "你不太爱凑热闹。热闹跟你没什么关系。",
+      "退得挺早。早到别人以为你输了。",
+      "你那点地方不大。但收拾得挺舒服。"
+    ],
+    extra: "被逼到头上，你说话会很难听。而且难听到点上。",
+    quote: "「不玩了。不是输了。」" },
+
+  { n: "匠人", person: "影子里站着的那个人：毕昇",
+    t: { act: 88, direct: 68, order: 82, alone: 46 },
+    why: [
+      "你不怎么会说话。但东西拿得出手。",
+      "糊弄的活你干不了。干一半就浑身难受。",
+      "你不跟人抢。就一直做。做久了，别人绕不开你。"
+    ],
+    extra: "你心里有条线。别人不知道在哪儿。",
+    quote: "「东西在那儿，比什么话都管用。」" },
+
+  { n: "说客", person: "影子里站着的那个人：苏秦",
+    t: { act: 84, direct: 24, order: 44, alone: 20 },
+    why: [
+      "你很少跟人硬碰。",
+      "别人说一句，你大概知道后面三句。",
+      "你身边总有人。跟你待着不累。"
+    ],
+    extra: "你不光想赢这一回。你想的是这一回完了怎么站住。",
+    quote: "「不吵架。把人劝回来。」" },
+
+  { n: "狂生", person: "影子里站着的那个人：嵇康",
+    t: { act: 88, direct: 92, order: 12, alone: 60 },
+    why: [
+      "你身上有股劲。别人说算了，你说不算。",
+      "说话不留余地。也不是不会，就是懒得留。",
+      "得罪人你不太怕。你怕的是自己变成你看不上的那种人。"
+    ],
+    extra: "看见不公你会管。哪怕这事跟你八竿子打不着。",
+    quote: "「规矩我懂。就是不认。」" },
+
+  { n: "医者", person: "影子里站着的那个人：李时珍",
+    t: { act: 74, direct: 38, order: 62, alone: 24 },
+    why: [
+      "出了事，你先看怎么办。谁对谁错你想得晚一点。",
+      "你不爱争。但能扛。别人散了，你还在。",
+      "帮人不图什么。但你想被记住。这话你不承认。"
+    ],
+    extra: "你信一遍一遍做。不信一次做对。",
+    quote: "「不问值不值。问还能不能救。」" },
+
+  { n: "游侠", person: "影子里站着的那个人：荆轲",
+    t: { act: 90, direct: 80, order: 26, alone: 34 },
+    why: [
+      "你做事不算账。",
+      "看见不对就先动了，理由后补。",
+      "很少想后果。但答应了的事，一般会做到。"
+    ],
+    extra: "你的义气里带点不管不顾。",
+    quote: "「怕。怕也去。」" }
+];
+
+/* ---------- 校准参数（跑过四万次随机作答，让八种结果都出得来） ---------- */
+const BIAS = {
+  "孤臣": 1.55, "谋士": 0.96, "隐士": 1.02, "匠人": 1.12,
+  "说客": 0.72, "狂生": 0.95, "医者": 0.95, "游侠": 0.95
+};
+
+const W = { act: 1.0, direct: 1.0, order: 1.0, alone: 1.0 };
+
+let idx = 0;
+let locked = false;
+let scores = { act: 0, direct: 0, order: 0, alone: 0 };
+let counts = { act: 0, direct: 0, order: 0, alone: 0 };
+
+const $ = id => document.getElementById(id);
+const show = el => el.style.display = "block";
+const hide = el => el.style.display = "none";
+
+function start() {
+  idx = 0;
+  locked = false;
+  scores = { act: 0, direct: 0, order: 0, alone: 0 };
+  counts = { act: 0, direct: 0, order: 0, alone: 0 };
+  hide($("cover")); hide($("result")); show($("quiz"));
+  render();
+}
+
+function render() {
+  locked = false;
+  const q = QUESTIONS[idx];
+  $("prog").textContent = String(idx + 1).padStart(2, "0") + " / " + QUESTIONS.length;
+  $("barFill").style.width = (idx / QUESTIONS.length * 100) + "%";
+  $("qText").textContent = q.q;
+  $("qText").style.animation = "none";
+  void $("qText").offsetWidth;
+  $("qText").style.animation = "";
+
+  const box = $("opts");
+  box.innerHTML = "";
+  q.o.forEach(opt => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.textContent = opt[0];
+    b.onclick = () => choose(b, opt[1]);
+    box.appendChild(b);
+  });
+}
+
+function choose(btn, delta) {
+  if (locked) return;          // 手快连点两下，不会跳题
+  locked = true;
+  document.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+  btn.classList.add("sel");
+  for (const k in delta) {
+    scores[k] = (scores[k] || 0) + delta[k];
+    counts[k] = (counts[k] || 0) + Math.abs(delta[k]);
+  }
+  setTimeout(() => {
+    idx++;
+    if (idx >= QUESTIONS.length) finish();
+    else render();
+  }, 180);
+}
+
+function norm(k) {
+  const c = counts[k];
+  if (!c) return 50;
+  const raw = scores[k] / c;
+  const st = Math.sign(raw) * Math.pow(Math.abs(raw), 0.62);
+  return Math.round(Math.max(5, Math.min(95, 50 + st * 55)));
+}
+
+function dist(t, v, name) {
+  let s = 0;
+  for (const k of DIMS) {
+    const d = (t[k] - v[k]) / 100;
+    s += d * d * (W[k] || 1);
+  }
+  return Math.sqrt(s) * (BIAS[name] || 1);
+}
+
+let CUR = null, CURV = null;
+
+function finish() {
+  hide($("quiz")); show($("result"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const v = {};
+  DIMS.forEach(k => { v[k] = norm(k); });
+  CURV = v;
+
+  const ranked = TYPES.map(t => ({ t, d: dist(t.t, v, t.n) })).sort((a, b) => a.d - b.d);
+  const best = ranked[0].t;
+  CUR = best;
+
+  $("rName").textContent = best.n;
+  $("rPerson").textContent = best.person;
+
+  const why = $("rWhy");
+  why.innerHTML = "";
+  best.why.forEach(txt => {
+    const p = document.createElement("p");
+    p.textContent = txt;
+    why.appendChild(p);
+  });
+
+  const dims = $("rDims");
+  dims.innerHTML = "";
+  const LABELS = [
+    ["act", "先上手", "先看着"],
+    ["direct", "正面来", "绕着来"],
+    ["order", "认规矩", "破规矩"],
+    ["alone", "一个人扛", "找人一起"]
+  ];
+  LABELS.forEach(([k, hi, lo]) => {
+    const div = document.createElement("div");
+    div.className = "dim";
+    div.innerHTML =
+      '<div class="lab"><span>' + hi + '</span><span>' + lo + '</span></div>' +
+      '<div class="track"><i style="left:' + Math.max(0, Math.min(100, v[k])) + '%"></i></div>';
+    dims.appendChild(div);
+  });
+
+  $("rExtra").textContent = best.extra;
+  $("rQuote").textContent = best.quote;
+}
+
+/* ---------------- 生成图片 ---------------- */
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const chars = text.split("");
+  let line = "";
+  let yy = y;
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxW && line.length > 0) {
+      ctx.fillText(line, x, yy);
+      line = chars[i];
+      yy += lineH;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, yy);
+  return yy + lineH;
+}
+
+function drawCard() {
+  const W_ = 750, H_ = 1180;
+  const cv = document.createElement("canvas");
+  cv.width = W_; cv.height = H_;
+  const g = cv.getContext("2d");
+
+  g.fillStyle = "#f5f1e8";
+  g.fillRect(0, 0, W_, H_);
+
+  // 边框
+  g.strokeStyle = "#ddd5c6";
+  g.lineWidth = 2;
+  g.strokeRect(34, 34, W_ - 68, H_ - 68);
+
+  const F = '"PingFang SC","Microsoft YaHei",serif';
+
+  // 小字
+  g.fillStyle = "#9c9285";
+  g.font = "22px " + F;
+  g.fillText("你身上住着", 72, 140);
+
+  // 大字（逐字拉开）
+  g.fillStyle = "#2b2620";
+  g.font = "bold 76px " + F;
+  let cx = 74;
+  for (const ch of CUR.n) {
+    g.fillText(ch, cx, 236);
+    cx += 92;
+  }
+
+  // 代表人物
+  g.fillStyle = "#8c8378";
+  g.font = "24px " + F;
+  g.fillText(CUR.person, 76, 288);
+
+  // 分隔线
+  g.strokeStyle = "#ddd5c6";
+  g.lineWidth = 1;
+  g.beginPath();
+  g.moveTo(76, 334);
+  g.lineTo(W_ - 76, 334);
+  g.stroke();
+
+  // quote
+  g.fillStyle = "#5e564c";
+  g.font = "30px " + F;
+  let y = wrapText(g, CUR.quote, 76, 408, W_ - 152, 52);
+
+  // 四个方向
+  y += 40;
+  g.fillStyle = "#9c9285";
+  g.font = "20px " + F;
+  const LAB = [
+    ["act", "先上手", "先看着"],
+    ["direct", "正面来", "绕着来"],
+    ["order", "认规矩", "破规矩"],
+    ["alone", "一个人扛", "找人一起"]
+  ];
+  LAB.forEach(([k, hi, lo]) => {
+    g.fillStyle = "#9c9285";
+    g.font = "19px " + F;
+    g.fillText(hi, 76, y);
+    const loW = g.measureText(lo).width;
+    g.fillText(lo, W_ - 76 - loW, y);
+
+    g.strokeStyle = "#ddd5c6";
+    g.beginPath();
+    g.moveTo(76, y + 22);
+    g.lineTo(W_ - 76, y + 22);
+    g.stroke();
+
+    const px = 76 + (W_ - 152) * (CURV[k] / 100);
+    g.fillStyle = "#8a6a4a";
+    g.beginPath();
+    g.arc(px, y + 22, 5, 0, Math.PI * 2);
+    g.fill();
+
+    y += 74;
+  });
+
+  // 底线
+  g.fillStyle = "#a89e90";
+  g.font = "19px " + F;
+  g.fillText("三十二题测出来的 · 你身上住着谁", 76, H_ - 108);
+
+  return cv.toDataURL("image/png");
+}
+
+function openShade() {
+  if (!CUR || !CURV) return;
+  let url;
+  try {
+    url = drawCard();
+  } catch (e) {
+    alert("图片没生成出来，截图吧。");
+    return;
+  }
+  $("cardImg").src = url;
+  $("shade").classList.add("on");
+  $("cardImg").onclick = () => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "古人-" + CUR.n + ".png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+}
+
+$("start").onclick = start;
+$("again").onclick = start;
+$("saveBtn").onclick = openShade;
+$("closeShade").onclick = () => $("shade").classList.remove("on");
+</script>
+</body>
+</html>
+

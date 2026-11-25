@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>你是在哪种家里长大的</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #f5f1e8; color: #2b2620;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", serif;
+    line-height: 1.9; min-height: 100vh; padding: 0 0 56px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 22px; }
+
+  #cover { padding-top: 15vh; text-align: center; }
+  #cover h1 { font-size: 27px; letter-spacing: 4px; font-weight: 600; margin: 0 0 16px; }
+  #cover .line { width: 38px; height: 1px; background: #c9bda9; margin: 26px auto; }
+  #cover p { font-size: 15px; color: #6a6156; margin: 7px 0; }
+  .hintline { margin-top: 24px; font-size: 13px; color: #9c9285; }
+
+  .btn {
+    display: inline-block; margin-top: 38px;
+    background: #2b2620; color: #f5f1e8;
+    border: none; border-radius: 2px;
+    padding: 15px 44px; font-size: 16px; letter-spacing: 4px;
+    font-family: inherit; cursor: pointer; transition: opacity .2s;
+  }
+  .btn:active { opacity: .72; }
+  .btn.ghost {
+    background: transparent; color: #6a6156;
+    border: 1px solid #c9bda9;
+    padding: 12px 24px; font-size: 14px; letter-spacing: 1px;
+    margin-top: 0;
+  }
+
+  #quiz { display: none; padding-top: 42px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: #9c9285; letter-spacing: 1.5px; margin-bottom: 14px;
+  }
+  .bar { height: 2px; background: #e4ddd0; position: relative; margin-bottom: 40px; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #8a6a4a; transition: width .35s ease; }
+
+  .q { font-size: 19px; line-height: 1.85; font-weight: 500; margin: 0 0 30px; min-height: 3.7em; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .opts { display: flex; flex-direction: column; gap: 11px; }
+  .opt {
+    text-align: left; width: 100%;
+    background: #fffdf8; border: 1px solid #e4ddd0; border-radius: 3px;
+    padding: 15px 17px; font-size: 15.5px; line-height: 1.8;
+    color: #2b2620; font-family: inherit; cursor: pointer;
+    transition: background .16s, border-color .16s, transform .1s;
+  }
+  .opt:active { transform: scale(.99); }
+  .opt.sel { background: #2b2620; color: #f5f1e8; border-color: #2b2620; }
+
+  #result { display: none; padding-top: 44px; }
+  .r-eyebrow { font-size: 12px; letter-spacing: 4px; color: #9c9285; margin-bottom: 8px; }
+  .r-name { font-size: 32px; letter-spacing: 6px; font-weight: 600; margin: 0 0 4px; }
+  .r-person { font-size: 13.5px; color: #8c8378; letter-spacing: 1px; margin-bottom: 26px; }
+
+  .r-card { background: #fffdf8; border: 1px solid #e4ddd0; border-radius: 3px; padding: 20px 19px; margin-bottom: 16px; }
+  .r-card h3 { font-size: 12px; letter-spacing: 3px; color: #9c9285; margin: 0 0 12px; font-weight: 500; }
+  .r-card p { margin: 0; font-size: 15.5px; line-height: 2.05; }
+  .r-card p + p { margin-top: 10px; }
+
+  .dim { margin-bottom: 15px; }
+  .dim:last-child { margin-bottom: 0; }
+  .dim .lab { display: flex; justify-content: space-between; font-size: 12px; color: #9c9285; margin-bottom: 6px; }
+  .dim .track { height: 1px; background: #e4ddd0; position: relative; }
+  .dim .track i { position: absolute; top: -2px; width: 5px; height: 5px; border-radius: 50%; background: #8a6a4a; }
+
+  .quote { border-left: 2px solid #c9bda9; padding: 2px 0 2px 15px; color: #6a6156; font-size: 15px; margin: 22px 0 0; line-height: 1.95; }
+  .actions { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  #shade { display: none; position: fixed; inset: 0; background: rgba(30,26,20,.82); z-index: 99; overflow: auto; padding: 30px 20px 50px; }
+  #shade.on { display: block; }
+  #shade .tip { color: #f5f1e8; text-align: center; font-size: 13px; letter-spacing: 1px; margin-bottom: 16px; }
+  #shade img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 2px; }
+  #shade .close {
+    display: block; margin: 22px auto 0; background: none;
+    border: 1px solid rgba(245,241,232,.5); color: #f5f1e8;
+    padding: 10px 30px; font-size: 14px; font-family: inherit;
+    border-radius: 2px; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <section id="cover">
+    <h1>你是在哪种家里长大的</h1>
+    <div class="line"></div>
+    <p>不是问你家好不好。</p>
+    <p>是问：在那个家里，你学会了怎么活。</p>
+    <div class="hintline">三十题 · 没有标准答案 · 想到什么选什么</div>
+    <button class="btn" id="start">开 始</button>
+  </section>
+
+  <section id="quiz">
+    <div class="topbar">
+      <span id="prog">01 / 30</span>
+      <span>按小时候的你选</span>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="q" id="qText"></div>
+    <div class="opts" id="opts"></div>
+  </section>
+
+  <section id="result">
+    <div class="r-eyebrow">你大概是</div>
+    <h1 class="r-name" id="rName"></h1>
+    <div class="r-person" id="rPerson"></div>
+
+    <div class="r-card">
+      <h3>大概是这么个人</h3>
+      <div id="rWhy"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>五条线</h3>
+      <div id="rDims"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>另外</h3>
+      <div id="rExtra"></div>
+    </div>
+
+    <p class="quote" id="rQuote"></p>
+
+    <div class="actions">
+      <button class="btn ghost" id="saveBtn">存成图片</button>
+      <button class="btn ghost" id="again">再测一次</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="shade">
+  <div class="tip">点图片可下载 · 或长按保存</div>
+  <img id="cardImg" alt="">
+  <button class="close" id="closeShade">关掉</button>
+</div>
+
+<script>
+/* 五条线：
+   voice  敢不敢开口
+   self   靠自己还是靠家里
+   care   被照顾还是照顾别人
+   safe   犯错安不安全
+   others 先想别人还是先想自己
+*/
+const DIMS = ["voice", "self", "care", "safe", "others"];
+
+const QUESTIONS = [
+  { q: "小时候打碎了一个碗。你第一反应",
+    o: [["先看有没有人听见", {safe:-2,voice:-1,self:1}],
+        ["赶紧收拾，装作没发生", {safe:-2,self:1,others:1}],
+        ["喊一声：我打碎了", {voice:2,safe:2,self:-1}]] },
+
+  { q: "考砸了，卷子要家长签字",
+    o: [["磨到最后一天才拿出来", {safe:-2,voice:-1,self:1}],
+        ["自己模仿着签了", {safe:-1,self:2,voice:-1}],
+        ["直接给，该骂就骂", {voice:1,safe:1,self:-2}]] },
+
+  { q: "在商场看中一个东西，有点贵",
+    o: [["看看，然后走了", {voice:-2,others:1,self:1}],
+        ["开口要，缠一会儿", {voice:2,self:-2,others:-1}],
+        ["先记着，等生日再说", {voice:-1,self:1,others:1}]] },
+
+  { q: "家里大人吵架",
+    o: [["躲回房间，把门关上", {voice:-2,safe:-1,self:2}],
+        ["站中间劝，两边说好话", {others:2,voice:1,self:-1}],
+        ["该干嘛干嘛，习惯了", {safe:-1,self:1,others:-1}]] },
+
+  { q: "过年亲戚问：这次考多少分",
+    o: [["老实说，然后低头吃饭", {voice:-1,safe:-1,self:1}],
+        ["抢在爸妈前面说个高的数", {voice:2,safe:-1,self:-1}],
+        ["看爸妈眼色再说", {others:2,voice:-1,self:-1}]] },
+
+  { q: "你生病了",
+    o: [["被照顾得有点过分，一直问要不要紧", {care:2,self:-2}],
+        ["自己找药吃，别麻烦人", {self:2,care:-2}],
+        ["忍着，等它自己好", {self:1,care:-1,voice:-1,others:-1}]] },
+
+  { q: "家里要买个大件，会问你意见吗",
+    o: [["会认真问，还跟我讨论", {voice:2,safe:1,self:-1}],
+        ["问一句，最后还是他们定", {voice:0,safe:0,self:-1,others:1}],
+        ["从来不问", {voice:-2,self:2}]] },
+
+  { q: "零花钱",
+    o: [["固定给，自己管", {self:1,safe:1,care:-1}],
+        ["要就有，看心情", {care:1,safe:1,self:-2}],
+        ["基本没有，要用再要", {self:1,voice:-1,care:-1}]] },
+
+  { q: "你被冤枉了一次",
+    o: [["争到底，一定要说清", {voice:2,safe:1,self:1}],
+        ["不争了，反正没人信", {voice:-2,safe:-2,self:-1}],
+        ["忍着，回头自己哭", {voice:-1,safe:-1,others:1,self:-1}]] },
+
+  { q: "家长会",
+    o: [["爸妈都来，还挺重视", {care:1,safe:1,self:-1}],
+        ["来一个，另一个忙", {care:0,safe:0,self:0}],
+        ["没人来，我自己签的字", {self:2,care:-2}]] },
+
+  { q: "饭桌上，你会说话吗",
+    o: [["说，什么都聊", {voice:2,safe:1,self:1}],
+        ["只听，不插嘴", {voice:-1,others:2,self:-1}],
+        ["快点吃完走人", {voice:-2,self:1,others:-1}]] },
+
+  { q: "家里有没有一条'不能碰'的规矩",
+    o: [["有，而且不能问为什么", {safe:-2,voice:-2,self:-1}],
+        ["有，但能商量", {safe:1,voice:1,self:0}],
+        ["没什么规矩", {safe:1,self:2,care:-1}]] },
+
+  { q: "你哭的时候，家里一般",
+    o: [["哄，什么都答应", {care:2,safe:1,others:-1,self:-1}],
+        ["说'哭什么哭'", {safe:-2,voice:-2,self:1}],
+        ["装作没看见", {care:-2,voice:-1,self:1}]] },
+
+  { q: "有个弟弟妹妹的话，你是",
+    o: [["被要求让的那个", {care:-1,others:2,self:2}],
+        ["被让的那个", {care:2,self:-2,others:-1}],
+        ["没有，就我一个", {care:1,self:0,others:0}]] },
+
+  { q: "被夸的时候",
+    o: [["大方收下", {voice:2,safe:2,self:1}],
+        ["说'没有没有'，心里高兴", {voice:-1,others:1,self:-1}],
+        ["不太信，觉得是客气", {safe:-1,voice:-1,self:-1}]] },
+
+  { q: "你犯错，家里更常是",
+    o: [["讲道理，说下次怎么办", {safe:2,voice:1,self:0}],
+        ["先骂一顿再说", {safe:-2,voice:-1,self:1}],
+        ["不太管", {safe:0,care:-2,self:1,others:-1}]] },
+
+  { q: "小时候一个人在家，你",
+    o: [["挺自在，想干嘛干嘛", {self:2,safe:1,others:-1}],
+        ["有点怕，把灯都开着", {self:-2,safe:-1,care:1}],
+        ["习惯了，经常这样", {self:2,care:-2,others:-1}]] },
+
+  { q: "家里大人的情绪，你",
+    o: [["一眼就看出来", {others:2,voice:-1,self:-1}],
+        ["看得出来，但不管", {others:1,self:1}],
+        ["不太注意", {others:-2,self:2}]] },
+
+  { q: "你做决定的时候",
+    o: [["自己定，定了再说", {self:2,voice:1,others:-1}],
+        ["先问家里", {self:-2,voice:1,others:1}],
+        ["问不问都一样，反正没人管", {self:1,care:-1,voice:-1,others:-1}]] },
+
+  { q: "你有没有过'不想回家'的念头",
+    o: [["有过，而且不止一次", {safe:-2,voice:-1,self:1}],
+        ["偶尔，闹别扭那种", {safe:0,self:0}],
+        ["没有", {safe:2,care:1,self:-1}]] },
+
+  { q: "家里夸你，一般夸什么",
+    o: [["懂事、省心", {others:2,voice:-1,self:-1}],
+        ["聪明、有出息", {voice:1,self:1}],
+        ["不太夸", {safe:-1,voice:-1,self:1,care:-1}]] },
+
+  { q: "被拿来跟别人比",
+    o: [["经常，很烦", {safe:-1,voice:-1,self:1}],
+        ["偶尔", {safe:0,self:0}],
+        ["从来不比", {safe:1,care:1,self:-1}]] },
+
+  { q: "你生病或者难受，会告诉家里吗",
+    o: [["会，说了有人管", {care:2,voice:1,self:-1}],
+        ["不太说，说了也没用", {voice:-2,self:2,others:-1}],
+        ["看情况，严重的才说", {self:1,voice:0,others:1}]] },
+
+  { q: "你和爸妈的关系，更接近",
+    o: [["能聊，也敢顶嘴", {voice:2,safe:2,self:-1}],
+        ["客气，有距离", {voice:-1,safe:-1,self:1}],
+        ["我更像照顾他们的那个", {care:-2,self:2,others:2}]] },
+
+  { q: "别人帮了你，你",
+    o: [["很自然地说谢谢", {safe:1,others:1,self:-1}],
+        ["有点不自在，想赶紧还回去", {self:2,others:0}],
+        ["习惯了，不太在意", {care:1,others:-2,self:1}]] },
+
+  { q: "你做错事，第一反应",
+    o: [["先想怎么补救", {self:2,safe:1,others:0}],
+        ["先想怎么不被发现", {safe:-2,voice:-1,self:1,others:-1}],
+        ["先道歉", {others:2,voice:1,self:-1}]] },
+
+  { q: "你小时候最想要的是",
+    o: [["有人听我说话", {voice:-1,others:1,care:1,self:-1}],
+        ["自由，别管我", {self:2,voice:0,others:-1}],
+        ["被夸一次", {safe:-1,care:1,self:-1,others:1}]] },
+
+  { q: "现在回家，你的感觉",
+    o: [["放松，能做自己", {safe:2,voice:1,self:1}],
+        ["还行，就是有点累", {safe:0,others:1,self:0}],
+        ["紧张，得打起精神", {safe:-2,voice:-1,self:1}]] },
+
+  { q: "你身上有个毛病，你自己知道是家里给的",
+    o: [["太怕麻烦别人", {others:2,voice:-1,self:1}],
+        ["太不会拒绝", {others:1,safe:-1,self:-1}],
+        ["太容易放弃", {self:-2,voice:-1,others:-1}]] },
+
+  { q: "最后一题。你现在更想",
+    o: [["证明自己", {self:2,voice:1,others:-1}],
+        ["找个人好好过日子", {care:1,others:1,self:-1}],
+        ["谁也别管我", {self:2,safe:0,voice:-1,others:-2}]] }
+];
+
+const TYPES = [
+  { n: "听话的那个",
+    person: "家里最省心的那一个",
+    t: { voice: 25, self: 50, care: 65, safe: 25, others: 75 },
+    why: [
+      "你从小就是「省事」那个。不吵、不闹、不开口要。",
+      "大人一皱眉，你就知道该收。后来成了本能。",
+      "你不太会说「我想要」。说出口之前，你已经替对方想好了三个拒绝的理由。"
+    ],
+    extra: "你发火的样子很吓人。因为平时不发。",
+    quote: "「我不添麻烦。」" },
+
+  { n: "被宠的那个",
+    person: "要什么基本都能拿到的那个",
+    t: { voice: 80, self: 25, care: 85, safe: 80, others: 25 },
+    why: [
+      "你要的东西，一般都能拿到。",
+      "所以你不怎么会等，也不怎么会忍。",
+      "别人说你娇气，你不服。但你确实没怎么吃过「要不到」的苦。"
+    ],
+    extra: "真碰上扛不住的事，你比谁都慌。",
+    quote: "「我没学过怎么要不到。」" },
+
+  { n: "没人管的那个",
+    person: "很早就自己搞定一切的那个",
+    t: { voice: 30, self: 90, care: 20, safe: 45, others: 45 },
+    why: [
+      "你很早就自己搞定一切。钥匙自己带，饭自己热。",
+      "家长会没人来，你就自己签。",
+      "别人夸你独立。你听着有点怪——那也不是你选的。"
+    ],
+    extra: "别人帮你的时候，你会有点不自在。",
+    quote: "「没事，我自己来。」" },
+
+  { n: "被商量的那个",
+    person: "家里有事会问你的那个",
+    t: { voice: 80, self: 55, care: 80, safe: 85, others: 70 },
+    why: [
+      "你家里有事会问你。「你怎么想」这句话，你从小听。",
+      "所以你敢说，也敢顶。顶完了不怕。",
+      "别人说你有底气。你只是从小被当成一个人。"
+    ],
+    extra: "你容易低估「别人家不这样」这件事。",
+    quote: "「那你说说你的想法。」" },
+
+  { n: "要当大人的那个",
+    person: "早早就开始照顾人的那个",
+    t: { voice: 45, self: 85, care: 25, safe: 40, others: 75 },
+    why: [
+      "你很早就开始照顾人。弟弟妹妹，爸妈，或者一个家。",
+      "你不太喊疼。喊了也没人接。",
+      "别人说你懂事。你心里想的是：不懂事能怎么办。"
+    ],
+    extra: "让你当「被照顾的那个」，你会手足无措。",
+    quote: "「我没事，你们先。」" },
+
+  { n: "夹在中间的那个",
+    person: "最会看脸色的那个",
+    t: { voice: 35, self: 65, care: 45, safe: 30, others: 90 },
+    why: [
+      "你很会看脸色。比同龄人早很多。",
+      "谁不高兴，你第一个知道。然后你去哄。",
+      "你不太占位置。站边上站惯了。"
+    ],
+    extra: "你最怕的不是吵架。是没人说话的那种安静。",
+    quote: "「都行，你们定。」" }
+];
+
+const BIAS = {
+  "听话的那个": 1.075, "被宠的那个": 0.435, "没人管的那个": 0.940,
+  "被商量的那个": 0.521, "要当大人的那个": 1.019, "夹在中间的那个": 1.000
+};
+
+let idx = 0;
+let locked = false;
+let scores = {}, counts = {};
+DIMS.forEach(k => { scores[k] = 0; counts[k] = 0; });
+
+const $ = id => document.getElementById(id);
+const show = el => el.style.display = "block";
+const hide = el => el.style.display = "none";
+
+function start() {
+  idx = 0; locked = false;
+  DIMS.forEach(k => { scores[k] = 0; counts[k] = 0; });
+  hide($("cover")); hide($("result")); show($("quiz"));
+  render();
+}
+
+function render() {
+  locked = false;
+  const q = QUESTIONS[idx];
+  $("prog").textContent = String(idx + 1).padStart(2, "0") + " / " + QUESTIONS.length;
+  $("barFill").style.width = (idx / QUESTIONS.length * 100) + "%";
+  $("qText").textContent = q.q;
+  $("qText").style.animation = "none";
+  void $("qText").offsetWidth;
+  $("qText").style.animation = "";
+
+  const box = $("opts");
+  box.innerHTML = "";
+  q.o.forEach(opt => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.textContent = opt[0];
+    b.onclick = () => choose(b, opt[1]);
+    box.appendChild(b);
+  });
+}
+
+function choose(btn, delta) {
+  if (locked) return;
+  locked = true;
+  document.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+  btn.classList.add("sel");
+  for (const k in delta) {
+    scores[k] = (scores[k] || 0) + delta[k];
+    counts[k] = (counts[k] || 0) + Math.abs(delta[k]);
+  }
+  setTimeout(() => {
+    idx++;
+    if (idx >= QUESTIONS.length) finish();
+    else render();
+  }, 180);
+}
+
+function norm(k) {
+  const c = counts[k];
+  if (!c) return 50;
+  const raw = scores[k] / c;
+  const st = Math.sign(raw) * Math.pow(Math.abs(raw), 0.62);
+  return Math.round(Math.max(5, Math.min(95, 50 + st * 55)));
+}
+
+function dist(t, v, name) {
+  let s = 0;
+  for (const k of DIMS) {
+    const d = (t[k] - v[k]) / 100;
+    s += d * d;
+  }
+  return Math.sqrt(s) * (BIAS[name] || 1);
+}
+
+let CUR = null, CURV = null;
+
+const LAB = [
+  ["voice", "敢开口", "憋着"],
+  ["self", "靠自己", "靠家里"],
+  ["care", "被照顾", "照顾别人"],
+  ["safe", "错了没事", "错了危险"],
+  ["others", "先想别人", "先想自己"]
+];
+
+function finish() {
+  hide($("quiz")); show($("result"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const v = {};
+  DIMS.forEach(k => { v[k] = norm(k); });
+  CURV = v;
+
+  const ranked = TYPES.map(t => ({ t, d: dist(t.t, v, t.n) })).sort((a, b) => a.d - b.d);
+  const best = ranked[0].t;
+  CUR = best;
+
+  $("rName").textContent = best.n;
+  $("rPerson").textContent = best.person;
+
+  const why = $("rWhy");
+  why.innerHTML = "";
+  best.why.forEach(txt => {
+    const p = document.createElement("p");
+    p.textContent = txt;
+    why.appendChild(p);
+  });
+
+  const dims = $("rDims");
+  dims.innerHTML = "";
+  LAB.forEach(([k, hi, lo]) => {
+    const div = document.createElement("div");
+    div.className = "dim";
+    div.innerHTML =
+      '<div class="lab"><span>' + hi + '</span><span>' + lo + '</span></div>' +
+      '<div class="track"><i style="left:' + Math.max(0, Math.min(100, v[k])) + '%"></i></div>';
+    dims.appendChild(div);
+  });
+
+  $("rExtra").textContent = best.extra;
+  $("rQuote").textContent = best.quote;
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const chars = text.split("");
+  let line = "", yy = y;
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxW && line.length > 0) {
+      ctx.fillText(line, x, yy);
+      line = chars[i];
+      yy += lineH;
+    } else line = test;
+  }
+  if (line) ctx.fillText(line, x, yy);
+  return yy + lineH;
+}
+
+function drawCard() {
+  const W_ = 750, H_ = 1260;
+  const cv = document.createElement("canvas");
+  cv.width = W_; cv.height = H_;
+  const g = cv.getContext("2d");
+
+  g.fillStyle = "#f5f1e8"; g.fillRect(0, 0, W_, H_);
+  g.strokeStyle = "#ddd5c6"; g.lineWidth = 2;
+  g.strokeRect(34, 34, W_ - 68, H_ - 68);
+
+  const F = '"PingFang SC","Microsoft YaHei",serif';
+
+  g.fillStyle = "#9c9285"; g.font = "22px " + F;
+  g.fillText("你大概是", 72, 140);
+
+  g.fillStyle = "#2b2620"; g.font = "bold 62px " + F;
+  let cx = 74;
+  for (const ch of CUR.n) { g.fillText(ch, cx, 232); cx += 72; }
+
+  g.fillStyle = "#8c8378"; g.font = "24px " + F;
+  g.fillText(CUR.person, 76, 286);
+
+  g.strokeStyle = "#ddd5c6"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(76, 330); g.lineTo(W_ - 76, 330); g.stroke();
+
+  g.fillStyle = "#5e564c"; g.font = "30px " + F;
+  let y = wrapText(g, CUR.quote, 76, 402, W_ - 152, 52);
+
+  y += 46;
+  LAB.forEach(([k, hi, lo]) => {
+    g.fillStyle = "#9c9285"; g.font = "19px " + F;
+    g.fillText(hi, 76, y);
+    const loW = g.measureText(lo).width;
+    g.fillText(lo, W_ - 76 - loW, y);
+
+    g.strokeStyle = "#ddd5c6";
+    g.beginPath(); g.moveTo(76, y + 22); g.lineTo(W_ - 76, y + 22); g.stroke();
+
+    const px = 76 + (W_ - 152) * (CURV[k] / 100);
+    g.fillStyle = "#8a6a4a";
+    g.beginPath(); g.arc(px, y + 22, 5, 0, Math.PI * 2); g.fill();
+    y += 70;
+  });
+
+  g.fillStyle = "#a89e90"; g.font = "19px " + F;
+  g.fillText("三十题测出来的 · 你在哪种家里长大", 76, H_ - 100);
+
+  return cv.toDataURL("image/png");
+}
+
+function openShade() {
+  if (!CUR || !CURV) return;
+  let url;
+  try { url = drawCard(); } catch (e) { alert("图没生成出来，截图吧。"); return; }
+  $("cardImg").src = url;
+  $("shade").classList.add("on");
+  $("cardImg").onclick = () => {
+    const a = document.createElement("a");
+    a.href = url; a.download = "家庭-" + CUR.n + ".png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  };
+}
+
+$("start").onclick = start;
+$("again").onclick = start;
+$("saveBtn").onclick = openShade;
+$("closeShade").onclick = () => $("shade").classList.remove("on");
+</script>
+</body>
+</html>
