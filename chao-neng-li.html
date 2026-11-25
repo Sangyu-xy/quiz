@@ -1,0 +1,606 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>你家给了你什么超能力</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #f2f0ea; color: #23201b;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", serif;
+    line-height: 1.9; min-height: 100vh; padding: 0 0 56px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 22px; }
+
+  #cover { padding-top: 14vh; text-align: center; }
+  #cover h1 { font-size: 26px; letter-spacing: 3px; font-weight: 600; margin: 0 0 16px; }
+  #cover .line { width: 38px; height: 1px; background: #c4bcae; margin: 26px auto; }
+  #cover p { font-size: 15px; color: #6a6156; margin: 7px 0; }
+  .hintline { margin-top: 24px; font-size: 13px; color: #9c9285; }
+
+  .btn {
+    display: inline-block; margin-top: 36px;
+    background: #23201b; color: #f2f0ea;
+    border: none; border-radius: 2px;
+    padding: 15px 44px; font-size: 16px; letter-spacing: 4px;
+    font-family: inherit; cursor: pointer; transition: opacity .2s;
+  }
+  .btn:active { opacity: .72; }
+  .btn.ghost {
+    background: transparent; color: #6a6156;
+    border: 1px solid #c9bda9;
+    padding: 12px 24px; font-size: 14px; letter-spacing: 1px;
+    margin-top: 0;
+  }
+
+  #quiz { display: none; padding-top: 42px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: #9c9285; letter-spacing: 1.5px; margin-bottom: 14px;
+  }
+  .bar { height: 2px; background: #e2ddd2; position: relative; margin-bottom: 40px; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #7d6247; transition: width .35s ease; }
+
+  .q { font-size: 19px; line-height: 1.85; font-weight: 500; margin: 0 0 30px; min-height: 3.7em; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .opts { display: flex; flex-direction: column; gap: 11px; }
+  .opt {
+    text-align: left; width: 100%;
+    background: #fffdf8; border: 1px solid #e2ddd2; border-radius: 3px;
+    padding: 15px 17px; font-size: 15.5px; line-height: 1.8;
+    color: #23201b; font-family: inherit; cursor: pointer;
+    transition: background .16s, border-color .16s, transform .1s;
+  }
+  .opt:active { transform: scale(.99); }
+  .opt.sel { background: #23201b; color: #f2f0ea; border-color: #23201b; }
+
+  #result { display: none; padding-top: 42px; }
+  .r-eyebrow { font-size: 12px; letter-spacing: 4px; color: #9c9285; margin-bottom: 10px; }
+  .r-name { font-size: 31px; letter-spacing: 4px; font-weight: 600; margin: 0 0 8px; }
+  .r-lv {
+    display: inline-block; font-size: 12px; letter-spacing: 2px;
+    border: 1px solid #c9bda9; color: #7d6247;
+    padding: 3px 10px; border-radius: 2px; margin-bottom: 24px;
+  }
+
+  .r-card { background: #fffdf8; border: 1px solid #e2ddd2; border-radius: 3px; padding: 20px 19px; margin-bottom: 16px; }
+  .r-card h3 { font-size: 12px; letter-spacing: 3px; color: #9c9285; margin: 0 0 12px; font-weight: 500; }
+  .r-card p { margin: 0; font-size: 15.5px; line-height: 2.05; }
+  .r-card p + p { margin-top: 10px; }
+
+  .dim { margin-bottom: 15px; }
+  .dim:last-child { margin-bottom: 0; }
+  .dim .lab { display: flex; justify-content: space-between; font-size: 12px; color: #9c9285; margin-bottom: 6px; }
+  .dim .track { height: 1px; background: #e2ddd2; position: relative; }
+  .dim .track i { position: absolute; top: -2px; width: 5px; height: 5px; border-radius: 50%; background: #7d6247; }
+
+  .quote { border-left: 2px solid #c4bcae; padding: 2px 0 2px 15px; color: #6a6156; font-size: 15px; margin: 22px 0 0; line-height: 1.95; }
+  .actions { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  #shade { display: none; position: fixed; inset: 0; background: rgba(28,25,20,.84); z-index: 99; overflow: auto; padding: 30px 20px 50px; }
+  #shade.on { display: block; }
+  #shade .tip { color: #f2f0ea; text-align: center; font-size: 13px; letter-spacing: 1px; margin-bottom: 16px; }
+  #shade img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 2px; }
+  #shade .close {
+    display: block; margin: 22px auto 0; background: none;
+    border: 1px solid rgba(242,240,234,.5); color: #f2f0ea;
+    padding: 10px 30px; font-size: 14px; font-family: inherit;
+    border-radius: 2px; letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <section id="cover">
+    <h1>你家给了你什么超能力</h1>
+    <div class="line"></div>
+    <p>说是超能力。</p>
+    <p>其实是你小时候为了活下去，练出来的那个东西。</p>
+    <div class="hintline">三十题 · 娱乐向 · 别太当真</div>
+    <button class="btn" id="start">开 始</button>
+  </section>
+
+  <section id="quiz">
+    <div class="topbar">
+      <span id="prog">01 / 30</span>
+      <span>按真实情况选</span>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="q" id="qText"></div>
+    <div class="opts" id="opts"></div>
+  </section>
+
+  <section id="result">
+    <div class="r-eyebrow">你的超能力是</div>
+    <h1 class="r-name" id="rName"></h1>
+    <div class="r-lv" id="rLv"></div>
+
+    <div class="r-card">
+      <h3>是什么</h3>
+      <div id="rWhy"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>副作用</h3>
+      <div id="rSide"></div>
+    </div>
+
+    <div class="r-card">
+      <h3>五条线</h3>
+      <div id="rDims"></div>
+    </div>
+
+    <p class="quote" id="rQuote"></p>
+
+    <div class="actions">
+      <button class="btn ghost" id="saveBtn">存成图片</button>
+      <button class="btn ghost" id="again">再测一次</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="shade">
+  <div class="tip">点图片可下载 · 或长按保存</div>
+  <img id="cardImg" alt="">
+  <button class="close" id="closeShade">关掉</button>
+</div>
+
+<script>
+/* 五条线：
+   alert  警觉（声音、情绪、气氛）
+   mask   伪装（切换、表演、藏）
+   solo   单干（不求人）
+   soothe 安抚（接住别人的情绪）
+   numb   钝化（压住自己的）
+*/
+const DIMS = ["alert", "mask", "solo", "soothe", "numb"];
+
+const QUESTIONS = [
+  { q: "楼道里有脚步声，你能听出是谁吗",
+    o: [["能，闭着眼都知道", {alert:2}],
+        ["大概能", {alert:1}],
+        ["听不出来", {alert:-2}]] },
+
+  { q: "家里有人心情不好，你多久察觉",
+    o: [["进门几秒就知道", {alert:2,soothe:1}],
+        ["过一会儿", {alert:0}],
+        ["经常后知后觉", {alert:-2}]] },
+
+  { q: "你走路有声音吗",
+    o: [["基本没有", {alert:1,mask:1}],
+        ["正常", {alert:0,mask:0}],
+        ["挺响", {alert:-1,mask:-1}]] },
+
+  { q: "做一件事之前，你会先想几种坏结果",
+    o: [["三种以上，还各有对策", {alert:2,solo:1}],
+        ["想一两个", {alert:0}],
+        ["不想，做了再说", {alert:-2}]] },
+
+  { q: "疼的时候，你会说吗",
+    o: [["不说", {numb:2,solo:2}],
+        ["忍到受不了才说", {numb:1,solo:1}],
+        ["会说", {numb:-2,solo:-1}]] },
+
+  { q: "在不同人面前，你像同一个人吗",
+    o: [["不太像，会换", {mask:2}],
+        ["差不多", {mask:0}],
+        ["一样", {mask:-2}]] },
+
+  { q: "有人发火，你能让他平静下来吗",
+    o: [["能，而且挺快", {soothe:2}],
+        ["试试看", {soothe:1}],
+        ["我一般先躲开", {soothe:-2}]] },
+
+  { q: "需要帮忙的时候，你会开口吗",
+    o: [["不到万不得已不开口", {solo:2}],
+        ["看是什么事", {solo:0}],
+        ["会开口", {solo:-2}]] },
+
+  { q: "家里有人摔门，你",
+    o: [["立刻判断接下来会不会吵起来", {alert:2,soothe:1}],
+        ["等等看", {alert:1}],
+        ["继续干自己的事", {alert:-2}]] },
+
+  { q: "你哭的时候，一般在",
+    o: [["一个人的时候", {numb:1,solo:1,mask:1}],
+        ["忍不住的时候哪都哭", {numb:-2,mask:-1}],
+        ["很少哭", {numb:2}]] },
+
+  { q: "别人跟你讲他的事，你",
+    o: [["很快就知道他想要什么反应", {soothe:2,alert:1}],
+        ["认真听", {soothe:1}],
+        ["不太会接", {soothe:-2}]] },
+
+  { q: "你擅长装没事吗",
+    o: [["非常擅长", {mask:2,numb:1}],
+        ["还行", {mask:1}],
+        ["不擅长", {mask:-2,numb:-1}]] },
+
+  { q: "一个人在家，你会",
+    o: [["把声音放小，怕被听见", {alert:1,mask:1}],
+        ["正常", {alert:0,mask:0}],
+        ["很自在，随便", {alert:-1,mask:-1}]] },
+
+  { q: "做错事被说了，你第一反应",
+    o: [["先想怎么补救，别让他更气", {soothe:1,alert:1}],
+        ["低头认错", {mask:1}],
+        ["辩解", {alert:-1,mask:-1}]] },
+
+  { q: "你会不会把要说的话在脑子里先过一遍",
+    o: [["经常，还会反复改", {mask:1,alert:1}],
+        ["重要的才过", {mask:0}],
+        ["不，直接说", {mask:-1}]] },
+
+  { q: "有人在背后靠近你",
+    o: [["立刻察觉", {alert:2}],
+        ["有时候", {alert:1}],
+        ["经常被吓一跳", {alert:-2}]] },
+
+  { q: "你自己难受的时候",
+    o: [["自己消化", {numb:2,solo:2}],
+        ["找人说", {numb:-1,solo:-1}],
+        ["说不清，就憋着", {numb:1}]] },
+
+  { q: "你在不同的群里，说话方式一样吗",
+    o: [["不一样，会换", {mask:2}],
+        ["有一点差别", {mask:1}],
+        ["一样", {mask:-2}]] },
+
+  { q: "有人在你面前哭",
+    o: [["知道该说什么", {soothe:2}],
+        ["递纸巾，不说话", {soothe:1}],
+        ["手足无措", {soothe:-2}]] },
+
+  { q: "换环境（新班级、新宿舍），你适应快吗",
+    o: [["很快，看一圈就知道怎么活", {mask:1,alert:1,solo:1}],
+        ["要一阵子", {mask:0}],
+        ["挺慢的", {mask:-1,solo:-1}]] },
+
+  { q: "家里安静得反常的时候，你",
+    o: [["立刻警觉，想是不是要出事", {alert:2}],
+        ["觉得挺好", {alert:-2}],
+        ["没注意过", {alert:-1}]] },
+
+  { q: "你会不会报喜不报忧",
+    o: [["会，而且很彻底", {numb:1,mask:1,solo:1}],
+        ["有时候", {numb:0}],
+        ["不会", {numb:-1,mask:-1}]] },
+
+  { q: "你能听出别人语气里的情绪吗",
+    o: [["能，很细", {alert:2,soothe:1}],
+        ["大概能", {alert:1}],
+        ["听不太出来", {alert:-2}]] },
+
+  { q: "答应别人的事，你会做到什么程度",
+    o: [["做到超出他预期，怕他不满意", {soothe:1,mask:1}],
+        ["做到说好的那样", {soothe:0}],
+        ["差不多就行", {soothe:-1,mask:-1}]] },
+
+  { q: "你一个人能撑多久不跟人说话",
+    o: [["很久，习惯了", {solo:2}],
+        ["几天", {solo:1}],
+        ["不太行", {solo:-2}]] },
+
+  { q: "别人说你「懂事」，你",
+    o: [["听着有点刺", {numb:1,mask:1}],
+        ["还好", {numb:0}],
+        ["挺高兴", {numb:-1,mask:-1}]] },
+
+  { q: "你有没有过「提前把最坏情况准备好」的经历",
+    o: [["有，而且真用上过", {alert:2,solo:1}],
+        ["有过", {alert:1}],
+        ["没有", {alert:-2}]] },
+
+  { q: "你更怕哪一种",
+    o: [["别人突然不高兴", {alert:2,soothe:1}],
+        ["自己出错", {mask:1,numb:1}],
+        ["没人理我", {soothe:-1,solo:-1}]] },
+
+  { q: "你会不会把「让别人的情绪变好」当成自己的任务",
+    o: [["会，忍不住", {soothe:2}],
+        ["看是谁", {soothe:1}],
+        ["不会", {soothe:-2}]] },
+
+  { q: "最后一题。你现在最想有",
+    o: [["一个不用装的地方", {mask:2,numb:1}],
+        ["一个能听我说话的人", {numb:-1,soothe:-1}],
+        ["谁也别来烦我", {solo:2,mask:-1}]] }
+];
+
+const TYPES = [
+  { n: "脚步声辨识", lv: "LV.7 · 被动技能",
+    t: {alert: 92,mask: 68,solo: 72,soothe: 35,numb: 62},
+    why: [
+      "楼道里一响，你就知道是谁回来了。高跟鞋、拖鞋、钥匙串，各有各的节奏。",
+      "你甚至能从脚步的快慢，判断今天要不要躲。"
+    ],
+    side: ["别人在你背后走，你会下意识绷一下。很难放松。"],
+    quote: "「不是听见的。是等出来的。」" },
+
+  { n: "情绪雷达", lv: "LV.6 · 被动技能",
+    t: {alert: 88,mask: 58,solo: 60,soothe: 92,numb: 30},
+    why: [
+      "谁今天不对劲，你进门三秒就知道。不用问，看他放包的力道。",
+      "你还能提前算出，他大概什么时候会爆。"
+    ],
+    side: ["别人还没开始难受，你已经替他难受完了。很累。"],
+    quote: "「我知道。我就是知道。」" },
+
+  { n: "静音行动", lv: "LV.5 · 被动技能",
+    t: {alert: 80,mask: 92,solo: 72,soothe: 32,numb: 62},
+    why: [
+      "你走路没声。推门、关门、上楼、倒水，全在无声范围里。",
+      "你不是练过。是习惯了不让人发现你在。"
+    ],
+    side: ["你经常被人吓一跳——因为他们没发现你在那儿。"],
+    quote: "「不用管我。」" },
+
+  { n: "最坏预演", lv: "LV.6 · 主动技能",
+    t: {alert: 85,mask: 45,solo: 90,soothe: 40,numb: 55},
+    why: [
+      "出门之前，你脑子里已经演完五种出事的方式，每一种都有对策。",
+      "所以你很少慌。因为你已经提前慌过了。"
+    ],
+    side: ["好事来的时候，你也先想它会怎么坏。"],
+    quote: "「万一呢。」" },
+
+  { n: "伤口自愈", lv: "LV.7 · 被动技能",
+    t: {alert: 40,mask: 50,solo: 88,soothe: 30,numb: 95},
+    why: [
+      "疼了不说。发烧了自己找药。难过了，睡一觉。",
+      "你很早就知道：说出来也没人来，那不如省点力气。"
+    ],
+    side: ["别人问你怎么了，你会说「没事」——而且自己都信了。"],
+    quote: "「没事。真没事。」" },
+
+  { n: "人格切换", lv: "LV.8 · 主动技能",
+    t: {alert: 45,mask: 95,solo: 55,soothe: 60,numb: 75},
+    why: [
+      "对什么人，你自动换成什么样子。切换很快，快到你自己都没察觉。",
+      "老师面前的你、亲戚面前的你、朋友面前的你，都是真的，也都不是全部。"
+    ],
+    side: ["一个人的时候，你不知道哪个才是原本那个。"],
+    quote: "「看场合。」" },
+
+  { n: "安抚力", lv: "LV.7 · 主动技能",
+    t: {alert: 75,mask: 50,solo: 35,soothe: 95,numb: 30},
+    why: [
+      "有人快炸了，你三句话能让他坐下。你不知道怎么会的，就是会。",
+      "因为你从小就在练这个。练了很多年。"
+    ],
+    side: ["你自己的火，没人接得住。"],
+    quote: "「先别急。慢慢说。」" },
+
+  { n: "单兵作战", lv: "LV.6 · 被动技能",
+    t: {alert: 35,mask: 25,solo: 95,soothe: 30,numb: 60},
+    why: [
+      "没人帮，你也能搞定。而且你没觉得这值得夸。",
+      "搬东西、修东西、跑手续、去医院——你一个人全干过。"
+    ],
+    side: ["有人想帮你，你会不自在。觉得欠了什么。"],
+    quote: "「我自己来。」" }
+];
+
+const BIAS = {
+  "脚步声辨识": 1.0, "情绪雷达": 1.0, "静音行动": 1.0, "最坏预演": 1.0,
+  "伤口自愈": 1.0, "人格切换": 1.0, "安抚力": 1.0, "单兵作战": 1.0
+};
+
+let idx = 0;
+let locked = false;
+let scores = {}, counts = {};
+DIMS.forEach(k => { scores[k] = 0; counts[k] = 0; });
+
+const $ = id => document.getElementById(id);
+const show = el => el.style.display = "block";
+const hide = el => el.style.display = "none";
+
+function start() {
+  idx = 0; locked = false;
+  DIMS.forEach(k => { scores[k] = 0; counts[k] = 0; });
+  hide($("cover")); hide($("result")); show($("quiz"));
+  render();
+}
+
+function render() {
+  locked = false;
+  const q = QUESTIONS[idx];
+  $("prog").textContent = String(idx + 1).padStart(2, "0") + " / " + QUESTIONS.length;
+  $("barFill").style.width = (idx / QUESTIONS.length * 100) + "%";
+  $("qText").textContent = q.q;
+  $("qText").style.animation = "none";
+  void $("qText").offsetWidth;
+  $("qText").style.animation = "";
+
+  const box = $("opts");
+  box.innerHTML = "";
+  q.o.forEach(opt => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.textContent = opt[0];
+    b.onclick = () => choose(b, opt[1]);
+    box.appendChild(b);
+  });
+}
+
+function choose(btn, delta) {
+  if (locked) return;
+  locked = true;
+  document.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+  btn.classList.add("sel");
+  for (const k in delta) {
+    scores[k] = (scores[k] || 0) + delta[k];
+    counts[k] = (counts[k] || 0) + Math.abs(delta[k]);
+  }
+  setTimeout(() => {
+    idx++;
+    if (idx >= QUESTIONS.length) finish();
+    else render();
+  }, 180);
+}
+
+function norm(k) {
+  const c = counts[k];
+  if (!c) return 50;
+  const raw = scores[k] / c;
+  const st = Math.sign(raw) * Math.pow(Math.abs(raw), 0.62);
+  return Math.round(Math.max(5, Math.min(95, 50 + st * 55)));
+}
+
+function dist(t, v, name) {
+  let s = 0;
+  for (const k of DIMS) {
+    const d = (t[k] - v[k]) / 100;
+    s += d * d;
+  }
+  return Math.sqrt(s) * (BIAS[name] || 1);
+}
+
+let CUR = null, CURV = null;
+
+const LAB = [
+  ["alert", "很警觉", "不太注意"],
+  ["mask", "会切换", "就一个样"],
+  ["solo", "自己扛", "会求助"],
+  ["soothe", "会安抚人", "不太会"],
+  ["numb", "压得住", "情绪外露"]
+];
+
+function finish() {
+  hide($("quiz")); show($("result"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  const v = {};
+  DIMS.forEach(k => { v[k] = norm(k); });
+  CURV = v;
+
+  const ranked = TYPES.map(t => ({ t, d: dist(t.t, v, t.n) })).sort((a, b) => a.d - b.d);
+  const best = ranked[0].t;
+  CUR = best;
+
+  $("rName").textContent = best.n;
+  $("rLv").textContent = best.lv;
+
+  const why = $("rWhy");
+  why.innerHTML = "";
+  best.why.forEach(txt => {
+    const p = document.createElement("p");
+    p.textContent = txt;
+    why.appendChild(p);
+  });
+
+  const side = $("rSide");
+  side.innerHTML = "";
+  best.side.forEach(txt => {
+    const p = document.createElement("p");
+    p.textContent = txt;
+    side.appendChild(p);
+  });
+
+  const dims = $("rDims");
+  dims.innerHTML = "";
+  LAB.forEach(([k, hi, lo]) => {
+    const div = document.createElement("div");
+    div.className = "dim";
+    div.innerHTML =
+      '<div class="lab"><span>' + hi + '</span><span>' + lo + '</span></div>' +
+      '<div class="track"><i style="left:' + Math.max(0, Math.min(100, v[k])) + '%"></i></div>';
+    dims.appendChild(div);
+  });
+
+  $("rQuote").textContent = best.quote;
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const chars = text.split("");
+  let line = "", yy = y;
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxW && line.length > 0) {
+      ctx.fillText(line, x, yy);
+      line = chars[i];
+      yy += lineH;
+    } else line = test;
+  }
+  if (line) ctx.fillText(line, x, yy);
+  return yy + lineH;
+}
+
+function drawCard() {
+  const W_ = 750, H_ = 1260;
+  const cv = document.createElement("canvas");
+  cv.width = W_; cv.height = H_;
+  const g = cv.getContext("2d");
+
+  g.fillStyle = "#f2f0ea"; g.fillRect(0, 0, W_, H_);
+  g.strokeStyle = "#ddd5c6"; g.lineWidth = 2;
+  g.strokeRect(34, 34, W_ - 68, H_ - 68);
+
+  const F = '"PingFang SC","Microsoft YaHei",serif';
+
+  g.fillStyle = "#9c9285"; g.font = "22px " + F;
+  g.fillText("你的超能力是", 72, 138);
+
+  g.fillStyle = "#23201b"; g.font = "bold 64px " + F;
+  let cx = 74;
+  for (const ch of CUR.n) { g.fillText(ch, cx, 230); cx += 74; }
+
+  g.fillStyle = "#7d6247"; g.font = "22px " + F;
+  g.fillText(CUR.lv, 76, 282);
+
+  g.strokeStyle = "#ddd5c6"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(76, 326); g.lineTo(W_ - 76, 326); g.stroke();
+
+  g.fillStyle = "#5e564c"; g.font = "30px " + F;
+  let y = wrapText(g, CUR.quote, 76, 398, W_ - 152, 52);
+
+  y += 44;
+  LAB.forEach(([k, hi, lo]) => {
+    g.fillStyle = "#9c9285"; g.font = "19px " + F;
+    g.fillText(hi, 76, y);
+    const loW = g.measureText(lo).width;
+    g.fillText(lo, W_ - 76 - loW, y);
+
+    g.strokeStyle = "#ddd5c6";
+    g.beginPath(); g.moveTo(76, y + 22); g.lineTo(W_ - 76, y + 22); g.stroke();
+
+    const px = 76 + (W_ - 152) * (CURV[k] / 100);
+    g.fillStyle = "#7d6247";
+    g.beginPath(); g.arc(px, y + 22, 5, 0, Math.PI * 2); g.fill();
+    y += 70;
+  });
+
+  g.fillStyle = "#a89e90"; g.font = "19px " + F;
+  g.fillText("三十题测出来的 · 你家给了你什么", 76, H_ - 100);
+
+  return cv.toDataURL("image/png");
+}
+
+function openShade() {
+  if (!CUR || !CURV) return;
+  let url;
+  try { url = drawCard(); } catch (e) { alert("图没生成出来，截图吧。"); return; }
+  $("cardImg").src = url;
+  $("shade").classList.add("on");
+  $("cardImg").onclick = () => {
+    const a = document.createElement("a");
+    a.href = url; a.download = "超能力-" + CUR.n + ".png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  };
+}
+
+$("start").onclick = start;
+$("again").onclick = start;
+$("saveBtn").onclick = openShade;
+$("closeShade").onclick = () => $("shade").classList.remove("on");
+</script>
+</body>
+</html>
+
